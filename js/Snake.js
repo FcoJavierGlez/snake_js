@@ -120,10 +120,11 @@ const Snake = class {
     #renderFood = function () {
         let row = undefined;
         let col = undefined;
+        let nameClass = '';
         do {
             row = parseInt(Math.random() * this.#boardGame.length);
             col = parseInt(Math.random() * this.#boardGame.length);
-        } while (this.#boardGame[row][col].classList == 'square snake');
+        } while ((nameClass = this.#boardGame[row][col].classList.value) == nameClass.match(/^square (snake|head)/)?.input);
         this.#boardGame[row][col].classList = `square food`;
     }
     #renderSnake = function () {
