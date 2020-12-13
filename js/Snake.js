@@ -4,7 +4,7 @@
 
 const Snake = class {
     static #MAX_SCORE   = 0;
-    static #POINTS_FOOD = 10;
+    static #POINTS_FOOD = 5;
     #score              = 0;
     #paused             = true;
     #idPlay             = 0;
