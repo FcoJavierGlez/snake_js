@@ -1,5 +1,6 @@
 :root {
     --width_square: 50px;
+    --color_snake: rgb(136, 209, 26);
 }
 @font-face {
     font-family: 'Digital-clock';
@@ -27,22 +28,36 @@
     background-color: gainsboro;
 }
 .snake {
-    background-color: rgb(136, 209, 26);
+    background-color: var(--color_snake);
+    color: rgb(255, 227, 68);
 }
+.head {
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+.up {
+    background-image: url(../img/head.png);
+}
+.right {
+    background-image: url(../img/head.png);
+    transform: rotate(90deg);
+}
+.down {
+    background-image: url(../img/head.png);
+    transform: rotate(180deg);
+}
+.left {
+    background-image: url(../img/head.png);
+    transform: rotate(-90deg);
+}
+
 .food {
     *background-color: rgb(175, 0, 0);
     background-image: url(../img/mouse.svg);
     background-position: center;
     background-size: contain;
     background-repeat: no-repeat;
-}
-
-.sq2 {
-    background-color: rgba(0, 255, 42, 0.5);
-}
-
-.sq5 {
-    background-color: rgba(255, 145, 0, 0.5);
 }
 
 .hidden {
