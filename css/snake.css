@@ -35,20 +35,18 @@
     background-position: center;
     background-size: contain;
     background-repeat: no-repeat;
-}
-.up {
     background-image: url(../img/head.png);
 }
 .right {
-    background-image: url(../img/head.png);
+    *background-image: url(../img/head.png);
     transform: rotate(90deg);
 }
 .down {
-    background-image: url(../img/head.png);
+    *background-image: url(../img/head.png);
     transform: rotate(180deg);
 }
 .left {
-    background-image: url(../img/head.png);
+    *background-image: url(../img/head.png);
     transform: rotate(-90deg);
 }
 
@@ -69,7 +67,10 @@
     margin: 15px auto;
     padding: 15px;
     width: 50%;
-    height: 80px;
+}
+
+#message p {
+    margin: 5px 0;
 }
 
 #message button {

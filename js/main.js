@@ -18,7 +18,6 @@
                 fragment.appendChild(square);
             }
         }
-        //console.log(boardGame);
         return [boardGame,fragment];
     }
     const resetGame = () => {
@@ -27,35 +26,48 @@
     }
     
     document.addEventListener("DOMContentLoaded", () => {
-        const containerMessage   = document.getElementById("message");
-        const message            = containerMessage.children[0];
-        const resetButton        = document.getElementById("reset");
-        const board              = document.getElementById("board");
-        const score              = document.getElementById("score");
+        const containerMessage     = document.getElementById("message");
+        const message              = containerMessage.children[0];
+        const resetButton          = document.getElementById("reset");
+        const board                = document.getElementById("board");
+        const score                = document.getElementById("score");
         const [boardGame,fragment] = createBoardGame();
+        let idRenderUI             = 0;
         const snake = new Snake(boardGame);
-
-        //console.log( snake.getBody() );
         board.appendChild(fragment);
 
         const showMessage = () => {
-            score.innerHTML   = snake.getScore();
-            /* message.innerHTML = Game.getWin() ? "¡Enhorabuena, has ganado!" : Game.getLose() ? "Lo siento, has perdido." : "";
-            containerMessage.classList = Game.getWin() ? "win" : Game.getLose() ? "lose" : "hidden"; */
+            message.innerHTML = snake.getEndGame() && snake.getAlive() ? 
+                `<h3>¡Enhorabuena, has ganado!</h3><p>Has obtenido ${snake.getScore()} puntos de un máximo de ${Snake.getMaxScore()}.</p>` : 
+                snake.getEndGame() && !snake.getAlive() ? `<h3>Lo siento, has perdido.</h3><p>Has obtenido ${snake.getScore()} puntos de un máximo de ${Snake.getMaxScore()}.</p>` : "";
+            containerMessage.classList = snake.getEndGame() && snake.getAlive() ? "win" : snake.getEndGame() && !snake.getAlive() ? "lose" : "hidden";
         }
 
-        score.innerHTML = snake.getScore();
+        const stopRenderUI = () => clearInterval(idRenderUI);
 
+        const renderUI = () => setInterval( 
+            () => {
+                if (!snake.getAlive() || snake.getEndGame()) {
+                    showMessage();
+                    stopRenderUI();
+                    return;
+                }
+                score.innerHTML = snake.getScore(true);
+                console.log('render')
+            }, 250);
+
+        score.innerHTML = snake.getScore(true);
+        
         document.addEventListener('keydown', e => {
+            if (!snake.getAlive() || snake.getEndGame()) return;
             if (e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") 
                 snake.setDirection( normalizeCodeKey(e.code) );
-            else if (e.code === "Space" || e.code === "KeyP" || e.code === "Pause")
+            else if (e.code === "Space" || e.code === "KeyP" || e.code === "Pause") {
                 snake.togglePause();
-        })
+                !snake.getPaused() ? (idRenderUI = renderUI()) : stopRenderUI();
+            }
+        });
 
-        /* document.addEventListener("click",showMessage);
-        document.addEventListener("contextmenu",showMessage);
-
-        resetButton.addEventListener("click",resetGame); */
+        //resetButton.addEventListener("click", resetGame);
     });
 }
