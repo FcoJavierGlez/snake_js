@@ -41,7 +41,7 @@ main h3 {
 }
 .contenedor {
     height: 100%;
-    width: 85%;
+    *width: 85%;
     margin: 0 auto;
     *display: grid;
 }

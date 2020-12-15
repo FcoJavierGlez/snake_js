@@ -16,10 +16,6 @@
     font-size: 24px;
     *border: 2px solid black;
 }
-/* button {
-    height: 20px;
-    width: 20px;
-} */
 .square {
     height: var(--width_square);
     width: var(--width_square);
@@ -109,4 +105,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.info {
+    display: grid;
+    align-content: center;
+    height: 100%;
+}
+
+.instructions {
+    height: 70vh;
 }
