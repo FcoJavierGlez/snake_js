@@ -15,12 +15,13 @@ const Snake = class {
     #direction          = 'right';
 
     constructor(boardGame) {
-        const row = parseInt((boardGame.length - 1) / 2);
-        const col = parseInt((boardGame.length - 1) / 3);
+        //const row = parseInt((boardGame.length - 1) / 2);
+        //const col = parseInt((boardGame.length - 1) / 3);
+        //this.#body      = [[row,col],[row,col - 1],[row,col - 2],[row,col - 3]];
         this.#boardGame = boardGame;
-        this.#body      = [[row,col],[row,col - 1],[row,col - 2],[row,col - 3]];
-        this.#renderSnake();  // Unir en un método???
-        this.#renderFood();   // Unir en un método???
+        this.#createSnakeBody();
+        this.#renderSnake();
+        this.#renderFood();
     }
 
     static getMaxScore = function (format = false) {
@@ -47,7 +48,7 @@ const Snake = class {
 
     setDirection = function (direction) {
         if (!this.#validateDirection(direction)) return;
-        if ( this.#checkSnakeBiteSelf(this.#getNextSquare(direction)) ) return;
+        //if ( this.#checkSnakeBiteSelf(this.#getNextSquare(direction)) ) return;
         this.#direction = direction;
     }
 
@@ -55,6 +56,19 @@ const Snake = class {
         if (!this.#alive || this.#endGame) return;
         this.#paused = !this.#paused;
         this.#paused ? (this.#pause()) : (this.#idPlay = this.#play(this));
+    }
+
+    resetGame = function() {
+        this.#score              = 0;
+        this.#idPlay             = 0;
+        this.#paused             = true;
+        this.#alive              = true;
+        this.#endGame            = false;
+        this.#direction          = 'right';
+        this.#createSnakeBody();
+        this.#resetBoardGame();
+        this.#renderSnake();
+        this.#renderFood();
     }
 
     #checkSnakeBiteSelf = function ([row,col]) {
@@ -79,12 +93,8 @@ const Snake = class {
         let snake = ref;
         return setInterval( function () {
             const [nextRow,nextCol] = snake.#getNextSquare(snake.#direction);
-            if (snake.#checkSnakeBiteSelf([nextRow,nextCol])) {
-                snake.#endGame = true;
-                snake.#alive   = false;
-                Snake.#MAX_SCORE = snake.#score > Snake.#MAX_SCORE ? snake.#score : Snake.#MAX_SCORE;
-                snake.#pause();
-            }
+            if (snake.#checkSnakeBiteSelf([nextRow,nextCol])) 
+                snake.#finishGame(true);
             else if (snake.#boardGame[nextRow][nextCol].classList == 'square food') snake.#eat([nextRow,nextCol]);
             else snake.#move([nextRow,nextCol]);
         }, 600 - snake.#body.length * 5);
@@ -97,8 +107,12 @@ const Snake = class {
         this.#body.unshift([row,col]);
         this.#boardGame[row][col].classList = `square head ${this.#direction}`;
         this.#boardGame[neckRow][neckCol].classList = `square snake`;
-        this.#renderFood();
         this.#score += Snake.#POINTS_FOOD;
+        if ( this.#body.length === this.#boardGame.length ** 2) {
+            this.#finishGame(false);
+            return;
+        }
+        this.#renderFood();
         this.#pause();
         this.#idPlay = this.#play(this);
     }
@@ -111,9 +125,18 @@ const Snake = class {
         this.#renderSnake();
     }
 
+    #finishGame = function (dead = false) {
+        this.#endGame    = true;
+        Snake.#MAX_SCORE = this.#score > Snake.#MAX_SCORE ? this.#score : Snake.#MAX_SCORE;
+        this.#pause();
+        if (dead) this.#alive = false;
+    }
+
     #formatScore = score => score < 10 ? `00${score}` : score < 100 ? `0${score}` : score
 
     #validateDirection = function (direction) {
+        const headDirection = this.#boardGame[this.#body[0][0]][this.#body[0][1]].classList.value.match(/^square head(\s(\w+)?)$/)?.[2];
+        if (this.#direction != headDirection) return false;
         switch (direction) {
             case direction.match(/^(UP|DOWN)$/i)?.input:
                 return !(this.#direction === 'down' || this.#direction === 'up');
@@ -136,7 +159,19 @@ const Snake = class {
     }
     #renderSnake = function () {
         this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i === 0 ? 
-            this.#direction == 'up' ? `square head` : `square head ${this.#direction}` : `square snake`
+            /* this.#direction == 'up' ? `square head` :  */`square head ${this.#direction}` : `square snake`
         );
+    }
+
+    #resetBoardGame = function () {
+        for (let i = 0; i < this.#boardGame.length; i++) 
+            for (let j = 0; j < this.#boardGame.length; j++) 
+                this.#boardGame[i][j].classList = `square empty`;
+    }
+
+    #createSnakeBody = function () {
+        const row  = parseInt((this.#boardGame.length - 1) / 2);
+        const col  = parseInt((this.#boardGame.length - 1) / 3);
+        this.#body = [[row,col],[row,col - 1],[row,col - 2],[row,col - 3]];
     }
 }
