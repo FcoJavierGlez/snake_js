@@ -15,9 +15,6 @@ const Snake = class {
     #direction          = 'right';
 
     constructor(boardGame) {
-        //const row = parseInt((boardGame.length - 1) / 2);
-        //const col = parseInt((boardGame.length - 1) / 3);
-        //this.#body      = [[row,col],[row,col - 1],[row,col - 2],[row,col - 3]];
         this.#boardGame = boardGame;
         this.#createSnakeBody();
         this.#renderSnake();
