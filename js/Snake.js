@@ -48,7 +48,6 @@ const Snake = class {
 
     setDirection = function (direction) {
         if (!this.#validateDirection(direction)) return;
-        //if ( this.#checkSnakeBiteSelf(this.#getNextSquare(direction)) ) return;
         this.#direction = direction;
     }
 
@@ -158,9 +157,7 @@ const Snake = class {
         this.#boardGame[row][col].classList = `square food`;
     }
     #renderSnake = function () {
-        this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i === 0 ? 
-            /* this.#direction == 'up' ? `square head` :  */`square head ${this.#direction}` : `square snake`
-        );
+        this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i === 0 ? `square head ${this.#direction}` : `square snake`);
     }
 
     #resetBoardGame = function () {
