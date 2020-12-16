@@ -49,7 +49,7 @@ class Chronometer {
         if (isNaN(time))
             this.#setTimeFromFormat(time);
         else
-            this.#seconds = time % Chronometer.#MAX_SECONDS_PER_DAY;
+            this.#seconds = parseInt(time) % Chronometer.#MAX_SECONDS_PER_DAY;
     }
 
     #setTimeFromFormat = function(time) {
