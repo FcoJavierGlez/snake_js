@@ -143,6 +143,26 @@ const Snake = class {
         }
     }
 
+    #checkTailCrossWall = function (rowBeforeTail,colBeforeTail) {
+        return rowBeforeTail == 0 && this.#body[this.#body.length - 1][0] == this.#boardGame.length - 1 ||
+            rowBeforeTail == this.#boardGame.length - 1 && this.#body[this.#body.length - 1][0] == 0 ||
+            colBeforeTail == 0 && this.#body[this.#body.length - 1][1] == this.#boardGame.length - 1 || 
+            colBeforeTail == this.#boardGame.length - 1 && this.#body[this.#body.length - 1][1] == 0;
+    }
+
+    #getDirectionTail = function () {
+        const rowBeforeTail = this.#body[this.#body.length - 2][0];
+        const colBeforeTail = this.#body[this.#body.length - 2][1];
+        if (this.#checkTailCrossWall(rowBeforeTail,colBeforeTail)) {
+            if (this.#body[this.#body.length - 1][0] - rowBeforeTail == 0)
+                return this.#body[this.#body.length - 1][1] < colBeforeTail > 0 ? "right" : "left";
+            return this.#body[this.#body.length - 1][0] < rowBeforeTail > 0 ? "down" : "up";
+        }
+        if (this.#body[this.#body.length - 1][0] - rowBeforeTail == 0)
+            return this.#body[this.#body.length - 1][1] > colBeforeTail ? "right" : "left";
+        return this.#body[this.#body.length - 1][0] > rowBeforeTail > 0 ? "down" : "up";
+    }
+
     #renderFood = function () {
         let row = undefined;
         let col = undefined;
@@ -150,11 +170,12 @@ const Snake = class {
         do {
             row = parseInt(Math.random() * this.#boardGame.length);
             col = parseInt(Math.random() * this.#boardGame.length);
-        } while ((nameClass = this.#boardGame[row][col].classList.value) == nameClass.match(/^square (snake|head)/)?.input);
+        } while ((nameClass = this.#boardGame[row][col].classList.value) == nameClass.match(/^square (snake|head|tail)/)?.input);
         this.#boardGame[row][col].classList = `square food`;
     }
     #renderSnake = function () {
-        this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i === 0 ? `square head ${this.#direction}` : `square snake`);
+        this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i == 0 ? `square head ${this.#direction}` : 
+            i == this.#body.length - 1 ? `square tail ${this.#getDirectionTail()}` : `square snake`);
     }
 
     #resetBoardGame = function () {

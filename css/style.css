@@ -32,7 +32,7 @@ p {
     text-align: justify;
 }
 main {
-    display: grid;
+    *display: grid;
     height: 76vh;
 }
 main h3 {

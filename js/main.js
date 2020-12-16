@@ -32,7 +32,8 @@
         }
     }
 
-    //const printTimer = (time,crono) => time.innerHTML = crono == undefined ? '00:00:00' : crono.getTime();
+    const printTimer = (display,crono) => display.innerHTML = crono == undefined ? '00:00:00' : crono.getTime();
+    const printScore = (display,game) => display.innerHTML = game.getScore(true);
     
     document.addEventListener("DOMContentLoaded", () => {
         const containerMessage     = document.getElementById("message");
@@ -48,11 +49,12 @@
         
         board.appendChild(fragment);
 
-        time.innerHTML = crono == undefined ? '00:00:00' : crono.getTime();
+        printScore(score,snake);
+        printTimer(time,crono);
 
         const showMessage = () => {
             const END_GAME_MESSAGE = 
-                `<p>Has obtenido ${snake.getScore()} puntos de un máximo de ${Snake.getMaxScore()} en un tiempo de ${crono.getTime()}.</p>`;
+                `<p>Has obtenido ${snake.getScore()} puntos de un máximo de ${Snake.getMaxScore()} en un tiempo de ${time.innerHTML}.</p>`;
             message.innerHTML = snake.getEndGame() && snake.getAlive() ? 
                 `<h3>¡Enhorabuena, has ganado!</h3>${END_GAME_MESSAGE}` : 
                 snake.getEndGame() && !snake.getAlive() ? `<h3>Lo siento, has perdido.</h3>${END_GAME_MESSAGE}` : "";
@@ -62,8 +64,8 @@
         const resetGame = () => {
             snake.resetGame();
             crono = createCrono(0);
-            score.innerHTML = snake.getScore(true);
-            time.innerHTML = crono == undefined ? '00:00:00' : crono.getTime();
+            printScore(score,snake);
+            printTimer(time,crono);
             containerMessage.classList = 'hidden';
         }
 
@@ -76,12 +78,10 @@
                     stopRenderUI();
                     return;
                 }
-                time.innerHTML  = crono == undefined ? '00:00:00' : crono.getTime();
-                score.innerHTML = snake.getScore(true);
-                console.log('render')
+                printScore(score,snake);
+                printTimer(time,crono);
             }, 250);
 
-        score.innerHTML = snake.getScore(true);
         
         document.addEventListener('keydown', e => {
             if (!snake.getAlive() || snake.getEndGame()) return;
