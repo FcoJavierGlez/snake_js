@@ -7,7 +7,6 @@ class Chronometer {
 
     #seconds = 0;
     #idPlay  = 0;
-    #paused  = true;
 
     constructor(time) {
         this.#setTime(time);
@@ -23,16 +22,8 @@ class Chronometer {
     }
 
     togglePause = function() {
-        this.#paused = !this.#paused;
-        this.#paused ? (this.#pause()) : (this.#idPlay = this.#play());
+        this.#idPlay == 0 ? (this.#idPlay = this.#play()) : this.#pause();
     }
-
-    /* reset = function() {
-        this.#pause();
-        this.#paused  = true;
-        this.#idPlay  = 0;
-        this.#seconds = 0;
-    } */
 
     #play = function() {
         let chrono = this;
@@ -43,7 +34,10 @@ class Chronometer {
             } , 1000);
     }
 
-    #pause = () => clearInterval(this.#idPlay);
+    #pause = function() {
+        clearInterval(this.#idPlay);
+        this.#idPlay = 0;
+    };
 
     #setTime = function(time) {
         if (isNaN(time))

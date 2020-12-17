@@ -6,7 +6,6 @@ const Snake = class {
     static #MAX_SCORE   = 0;
     static #POINTS_FOOD = 5;
     #score              = 0;
-    #paused             = true;
     #idPlay             = 0;
     #boardGame          = [];
     #body               = [];
@@ -28,7 +27,7 @@ const Snake = class {
         return format ? this.#formatScore(this.#score) : this.#score;
     }
     getPaused = function () {
-        return this.#paused;
+        return this.#idPlay == 0;
     }
     getBody = function () {
         return this.#body;
@@ -50,14 +49,12 @@ const Snake = class {
 
     togglePause = function () {
         if (!this.#alive || this.#endGame) return;
-        this.#paused = !this.#paused;
-        this.#paused ? (this.#pause()) : (this.#idPlay = this.#play(this));
+        this.#idPlay == 0 ? (this.#idPlay = this.#play(this)) : this.#pause();
     }
 
     resetGame = function() {
         this.#score              = 0;
         this.#idPlay             = 0;
-        this.#paused             = true;
         this.#alive              = true;
         this.#endGame            = false;
         this.#direction          = 'right';
@@ -96,7 +93,10 @@ const Snake = class {
         }, 600 - snake.#body.length * 5);
     }
 
-    #pause = () => clearInterval(this.#idPlay);
+    #pause = function() {
+        clearInterval(this.#idPlay);
+        this.#idPlay = 0;
+    }
 
     #eat = function ([row,col]) {
         let [neckRow,neckCol] = [this.#body[0][0],this.#body[0][1]];
