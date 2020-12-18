@@ -43,15 +43,12 @@
     background-image: url(../img/tail.png);
 }
 .right {
-    *background-image: url(../img/head.png);
     transform: rotate(90deg);
 }
 .down {
-    *background-image: url(../img/head.png);
     transform: rotate(180deg);
 }
 .left {
-    *background-image: url(../img/head.png);
     transform: rotate(-90deg);
 }
 
@@ -79,14 +76,17 @@
     padding: 15px;
     width: 50%;
 }
-
+#message h3 {
+    font-size: 0.75rem;
+}
 #message p {
     margin: 5px 0;
+    font-size: 0.6rem;
 }
-
 #message button {
-    height: 30px;
-    width: 80px;
+    height: 20px;
+    width: 60px;
+    font-size: 0.7rem;
 }
 
 .win {
@@ -130,9 +130,15 @@
     height: 100%;
 }
 
+#panel {
+    height: 100%;
+    margin-top: 10vh;
+}
+
 .instructions {
     height: 45vh;
 }
+
 @media only screen and (min-width: 700px) {
     #board {
         grid-template-columns: repeat(10,var(--width_square_min_700));
@@ -152,6 +158,20 @@
     }
     .instructions {
         height: 58vh;
+    }
+    #panel {
+        margin-top: 5vh;
+    }
+    #message h3 {
+        font-size: 1rem;
+    }
+    #message p {
+        font-size: 0.75rem;
+    }
+    #message button {
+        height: 25px;
+        width: 75px;
+        font-size: 0.85rem;
     }
 }
 @media only screen and (min-width: 900px) {
@@ -173,6 +193,20 @@
     }
     .instructions {
         height: 70vh;
+    }
+    #panel {
+        margin-top: 0;
+    }
+    #message h3 {
+        font-size: 1.25rem;
+    }
+    #message p {
+        font-size: 1rem;
+    }
+    #message button {
+        height: 30px;
+        width: 80px;
+        font-size: 1rem;
     }
 }
 @media only screen and (min-width: 1100px) {
