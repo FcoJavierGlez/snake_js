@@ -1,5 +1,9 @@
 :root {
-    --width_square: 50px;
+    --width_square_min_500: 25px;
+    --width_square_min_700: 30px;
+    --width_square_min_900: 40px;
+    --width_square_min_1100: 45px;
+    --width_square_min_1300: 50px;
     --color_snake: rgb(136, 209, 26);
 }
 @font-face {
@@ -8,17 +12,16 @@
 }
 #board {
     display: grid;
-    grid-template-columns: repeat(10,var(--width_square));
+    grid-template-columns: repeat(10,var(--width_square_min_500));
     column-gap: 2px;
     row-gap: 2px;
     justify-content: center;
     align-self: center;
     font-size: 24px;
-    *border: 2px solid black;
 }
 .square {
-    height: var(--width_square);
-    width: var(--width_square);
+    height: var(--width_square_min_500);
+    width: var(--width_square_min_500);
 }
 .empty {
     background-color: gainsboro;
@@ -102,19 +105,19 @@
     border-radius: 10px;
     margin: 0 auto;
     padding: 5px;
-    width: 150px;
-    height: 90px;
+    width: 40px;
+    height: 25px;
     display: grid;
     align-items: center;
     text-align: right;
     color: red;
     font-family: 'Digital-clock';
-    font-size: 80px;
+    font-size: 24px;
 }
 
 #time {
-    width: 200px;
-    font-size: 50px;
+    width: 60px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -128,6 +131,83 @@
 }
 
 .instructions {
-    height: 70vh;
-    *width: 60%;
+    height: 45vh;
+}
+@media only screen and (min-width: 700px) {
+    #board {
+        grid-template-columns: repeat(10,var(--width_square_min_700));
+    }
+    .square {
+        height: var(--width_square_min_700);
+        width: var(--width_square_min_700);
+    }
+    #score, #time {
+        width: 65px;
+        height: 35px;
+        font-size: 30px;
+    }
+    #time {
+        width: 85px;
+        font-size: 25px;
+    }
+    .instructions {
+        height: 58vh;
+    }
+}
+@media only screen and (min-width: 900px) {
+    #board {
+        grid-template-columns: repeat(10,var(--width_square_min_900));
+    }
+    .square {
+        height: var(--width_square_min_900);
+        width: var(--width_square_min_900);
+    }
+    #score, #time {
+        width: 90px;
+        height: 50px;
+        font-size: 46px;
+    }
+    #time {
+        width: 140px;
+        font-size: 40px;
+    }
+    .instructions {
+        height: 70vh;
+    }
+}
+@media only screen and (min-width: 1100px) {
+    #board {
+        grid-template-columns: repeat(10,var(--width_square_min_1100));
+    }
+    .square {
+        height: var(--width_square_min_1100);
+        width: var(--width_square_min_1100);
+    }
+    #score, #time {
+        width: 125px;
+        height: 70px;
+        font-size: 65px;
+    }
+    #time {
+        width: 190px;
+        font-size: 50px;
+    }
+}
+@media only screen and (min-width: 1300px) {
+    #board {
+        grid-template-columns: repeat(10,var(--width_square_min_1300));
+    }
+    .square {
+        height: var(--width_square_min_1300);
+        width: var(--width_square_min_1300);
+    }
+    #score, #time {
+        width: 150px;
+        height: 90px;
+        font-size: 80px;
+    }
+    #time {
+        width: 200px;
+        font-size: 50px;
+    }
 }
