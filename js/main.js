@@ -43,7 +43,7 @@
         const score                = document.getElementById("score");
         const time                 = document.getElementById("time");
         const [boardGame,fragment] = createBoardGame();
-        const snake                = new Snake(boardGame);
+        const snake                = new SnakeGame(boardGame, localStorage.getItem('snake_max_score'));
         let crono                  = createCrono(0);
         let idRenderUI             = 0;
         
@@ -54,7 +54,7 @@
 
         const showMessage = () => {
             const END_GAME_MESSAGE = 
-                `<p>Has obtenido ${snake.getScore()} puntos de un máximo de ${Snake.getMaxScore()} en un tiempo de ${time.innerHTML}.</p>`;
+                `<p>Has obtenido ${snake.getScore()} puntos de un máximo de ${SnakeGame.getMaxScore()} en un tiempo de ${time.innerHTML}.</p>`;
             message.innerHTML = snake.getEndGame() && snake.getAlive() ? 
                 `<h3>¡Enhorabuena, has ganado!</h3>${END_GAME_MESSAGE}` : 
                 snake.getEndGame() && !snake.getAlive() ? `<h3>Lo siento, has perdido.</h3>${END_GAME_MESSAGE}` : "";
@@ -74,6 +74,7 @@
         const renderUI = () => setInterval( 
             () => {
                 if (!snake.getAlive() || snake.getEndGame()) {
+                    localStorage.setItem('snake_max_score',SnakeGame.getMaxScore());
                     showMessage();
                     stopRenderUI();
                     return;
