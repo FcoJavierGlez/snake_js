@@ -10,8 +10,8 @@
  * consumida antes de acabar su tiempo, acabará desapareciendo.
  */
 class Food {
-    static #CLASS_NORMAL_FOOD  = '';
-    static #CLASS_SPECIAL_FOOD = '';
+    static #CLASS_NORMAL_FOOD  = 'square food';
+    static #CLASS_SPECIAL_FOOD = 'square special-food';
     #points   = 0;
     #time     = 0;
     #idRender = 0;
@@ -64,7 +64,7 @@ class Food {
             () => {
                 food.#element.classList = food.#time < 0 ? Food.#CLASS_NORMAL_FOOD : Food.#CLASS_SPECIAL_FOOD;
                 food.#time = (food.#time -= 0.1).toFixed(1);
-                if (food.#time == 0) food.disableMe();
+                if (food.#time == 0) food.eated();
             }, 100);
     }
 }
