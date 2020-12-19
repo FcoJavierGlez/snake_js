@@ -55,10 +55,10 @@
         const showMessage = () => {
             const END_GAME_MESSAGE = 
                 `<p>Has obtenido ${snake.getScore()} puntos de un máximo de ${SnakeGame.getMaxScore()} en un tiempo de ${time.innerHTML}.</p>`;
-            message.innerHTML = snake.getEndGame() && snake.getAlive() ? 
+            message.innerHTML = snake.getStatusGame() === 'WIN' ? 
                 `<h3>¡Enhorabuena, has ganado!</h3>${END_GAME_MESSAGE}` : 
-                snake.getEndGame() && !snake.getAlive() ? `<h3>Lo siento, has perdido.</h3>${END_GAME_MESSAGE}` : "";
-            containerMessage.classList = snake.getEndGame() && snake.getAlive() ? "win" : snake.getEndGame() && !snake.getAlive() ? "lose" : "hidden";
+                snake.getStatusGame() === 'LOSE' ? `<h3>Lo siento, has perdido.</h3>${END_GAME_MESSAGE}` : "";
+            containerMessage.classList = snake.getStatusGame() === 'WIN' ? "win" : snake.getStatusGame() === 'LOSE' ? "lose" : "hidden";
         }
 
         const resetGame = () => {
@@ -73,7 +73,8 @@
 
         const renderUI = () => setInterval( 
             () => {
-                if (!snake.getAlive() || snake.getEndGame()) {
+                if (snake.getStatusGame() !== '') {
+                    localStorage.removeItem('snake_max_score');
                     localStorage.setItem('snake_max_score',SnakeGame.getMaxScore());
                     showMessage();
                     stopRenderUI();
@@ -85,7 +86,7 @@
 
         
         document.addEventListener('keydown', e => {
-            if (!snake.getAlive() || snake.getEndGame()) return;
+            if (snake.getStatusGame() !== '') return;
             if (e.code === "ArrowUp" || e.code === "ArrowDown" || e.code === "ArrowLeft" || e.code === "ArrowRight") 
                 snake.setDirection( normalizeCodeKey(e.code) );
             else if (e.code === "Space" || e.code === "KeyP" || e.code === "Pause") {
