@@ -36,7 +36,7 @@ Puedes acceder a través del siguiente enlace: **[Juego Snake](https://fcojavier
 ![captura3](img_readme/captura3.png)  *Alimento especial.*
 
 <p style="text-aling: justify;">
-    <b>Cada cierto tiempo aparece un alimento especial, vale más putos</b> que una comida normal, <b>¡¡si no te das prisa desaparecerá!!</b>
+    <b>Cada cierto tiempo aparece un alimento especial, vale más puntos</b> que una comida normal, <b>¡¡si no te das prisa desaparecerá!!</b>
 </p>
 
 ![captura4](img_readme/captura4.png)  *Se puede cruzar paredes.*
