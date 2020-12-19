@@ -20,7 +20,7 @@ Puedes acceder a través del siguiente enlace: **[Juego Snake](https://fcojavier
 
 ## Instrucciones:
 
-### Controlles:
+### Controles:
 
 - **Espacio:** Pausa/reanuda el juego.
 - **Cursores:** Desplaza a la serpiente en las cuatro direcciones de los cursores.
