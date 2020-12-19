@@ -76,6 +76,7 @@
                 if (snake.getStatusGame() !== '') {
                     localStorage.removeItem('snake_max_score');
                     localStorage.setItem('snake_max_score',SnakeGame.getMaxScore());
+                    printScore(score,snake);
                     showMessage();
                     stopRenderUI();
                     return;
