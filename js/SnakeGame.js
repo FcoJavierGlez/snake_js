@@ -1,196 +1,241 @@
 /**
  * @author Francisco Javier González Sabariego
  * 
+ * SnakeGame Class:
  * 
+ * La clase SnakeGame permite crear un objeto encargado del funcionamiento del juego Snake.
  * 
  */
 
 const SnakeGame = class {
-    static #MAX_SCORE   = 0;
-    static #POINTS_FOOD = 5;
-    #score              = 0;
-    #idPlay             = 0;
-    #boardGame          = [];
-    #body               = [];
-    #alive              = true;
-    #endGame            = false;
-    #direction          = 'right';
+    static #POINTS_FOOD         = 5;    //Constant
+    static #POINTS_SPECIAL_FOOD = 15;   //Constant
+    static #MAX_SCORE           = 0;
+    #score     = 0;
+    #idPlay    = 0;
+    #boardGame = [];
+    #snake     = null;
 
+    /**
+     * Constructor de la clase SnakeGame
+     * 
+     * @param {Array} boardGame Array bidimensional del conjunto de elementos del árbol DOm que conforman el tablero de juego
+     * @param {Number} maxScore La puntuación máxima acumulada en una cookie en el navegador.
+     */
     constructor(boardGame,maxScore) {
         SnakeGame.#MAX_SCORE = maxScore == undefined ? SnakeGame.#MAX_SCORE : maxScore;
+        this.#snake     = new Snake(boardGame.length);
         this.#boardGame = boardGame;
-        this.#createSnakeBody();
+        this.#resetBoardGame();
         this.#renderSnake();
-        this.#renderFood();
+        this.#createFood();
     }
 
+    /**
+     * Devuelve la puntuación máxima alcanzada en alguna partida.
+     * 
+     * @param {Boolean} format Opcional: Booleano para solicitar la puntuación formateada '005' ó '5'
+     * @return {String}        Puntuación máxima acumulada.
+     */
     static getMaxScore = function (format = false) {
         return format ? SnakeGame.#formatScore(SnakeGame.#MAX_SCORE) : SnakeGame.#MAX_SCORE;
     }
+
+    /**
+     * Devuelve la puntuación actual.
+     * 
+     * @param {Boolean} format Opcional: Booleano para solicitar la puntuación formateada '005' ó '5'
+     * @return {String}        Puntuación actual.
+     */
     getScore = function (format = false) {
         return format ? this.#formatScore(this.#score) : this.#score;
     }
+
+    /**
+     * Devuelve si el juego está actualmente pausado.
+     * 
+     * @return {Boolean} Si el juego está pausado. True or false.
+     */
     getPaused = function () {
         return this.#idPlay == 0;
     }
-    getBody = function () {
-        return this.#body;
-    }
-    getDirection = function () {
-        return this.#direction;
-    }
-    getAlive = function () {
-        return this.#alive;
-    }
-    getEndGame = function () {
-        return this.#endGame;
+
+    /**
+     * Devuelve el estado del juego: Ganado, perdido o sin finalizar.
+     * 
+     * @return {String} Estado del juego: Ganado = 'WIN' | Perdido = 'LOSE' | Sin finalizar = ''
+     */
+    getStatusGame = function () {
+        return this.#snake.getBody().length == this.#boardGame.length ** 2 ? 'WIN' : !this.#snake.getAlive() ? 'LOSE' : '';
     }
 
+    /**
+     * Asigna la nueva dirección a la que queramos orientar a la serpiente  siempre que el juego esté en marcha.
+     * Sólo aceptará las siguientes entradas: 'up','down','left' y 'right'.
+     * 
+     * @param {String} direction La nueva dirección que queramos asignar a la serpiente.
+     *                           Sólo acepta: 'up','down','left' y 'right'.
+     */
     setDirection = function (direction) {
-        if (!this.#validateDirection(direction)) return;
-        this.#direction = direction;
+        direction = direction.toLowerCase();
+        if (this.#idPlay == 0) return;
+        if ( !(direction == 'up' || direction == 'down' || direction == 'left' || direction == 'right') ) return;
+        this.#snake.setDirection(direction);
     }
 
+    /**
+     * Pausa o reanuda el juego.
+     */
     togglePause = function () {
-        if (!this.#alive || this.#endGame) return;
-        this.#idPlay == 0 ? (this.#idPlay = this.#play(this)) : this.#pause();
+        if (this.getStatusGame() !== '') return;
+        this.#idPlay == 0 ? (this.#idPlay = this.#play()) : this.#pause();
+        this.#togglePauseFoodTimer();
     }
 
-    resetGame = function() {
-        this.#score              = 0;
-        this.#idPlay             = 0;
-        this.#alive              = true;
-        this.#endGame            = false;
-        this.#direction          = 'right';
-        this.#createSnakeBody();
+    /**
+     * Reinicia el juego una vez terminado.
+     */
+    resetGame = function() { //Pending
+        this.#score    = 0;
+        this.#idPlay   = 0;
+        this.#snake    = new Snake(this.#boardGame.length);
         this.#resetBoardGame();
         this.#renderSnake();
-        this.#renderFood();
+        this.#createFood();
     }
 
-    #checkSnakeBiteSelf = function ([row,col]) {
-        const [tailRow,tailCol] = this.#body[this.#body.length - 1];
-        return this.#boardGame[row][col].classList == 'square snake' && !(row === tailRow && col === tailCol);
-    }
-
-    #adjustCoordinatesNextSquare = function ([row,col]) {
-        row = row < 0 ? this.#boardGame.length - 1 : row > this.#boardGame.length - 1 ? 0 : row;
-        col = col < 0 ? this.#boardGame.length - 1 : col > this.#boardGame.length - 1 ? 0 : col;
-        return [row,col];
-    }
-
-    #getNextSquare = function (direction) {
-        let [row,col] = [this.#body[0][0],this.#body[0][1]];
-        row += direction === 'up' ? -1 : direction === 'down' ? 1 : 0;
-        col += direction === 'left' ? -1 : direction === 'right' ? 1 : 0;
-        return this.#adjustCoordinatesNextSquare([row,col]);
-    }
-
-    #play = function (ref) { 
-        let snake = ref;
+    /**
+     * Pone en marcha el juego.
+     */
+    #play = function () { 
+        let game = this;
         return setInterval( function () {
-            const [nextRow,nextCol] = snake.#getNextSquare(snake.#direction);
-            if (snake.#checkSnakeBiteSelf([nextRow,nextCol])) 
-                snake.#finishGame(true);
-            else if (snake.#boardGame[nextRow][nextCol].classList == 'square food') snake.#eat([nextRow,nextCol]);
-            else snake.#move([nextRow,nextCol]);
-        }, 600 - snake.#body.length * 5);
+            const [nextRow,nextCol] = game.#snake.getNextSquare(game.#boardGame.length);
+            if (game.#boardGame[nextRow][nextCol].food == null) {
+                game.#snake.move([nextRow,nextCol]);
+                game.#renderBoardGame();
+            }
+            else {
+                const points = game.#feedSnake([nextRow,nextCol]);
+                game.#renderBoardGame();
+                if (!(points == SnakeGame.#POINTS_SPECIAL_FOOD)) //if snake hasn't just eaten a special food
+                    game.#createFood();
+                if (game.#checkCreateSpecialFood()) 
+                    game.#createFood(true);
+                game.#pause();
+                game.#idPlay = game.#play();
+            }
+            if (game.getStatusGame() != '')
+                game.#finishGame();
+        }, 600 - game.#snake.getBody().length * 5);
     }
 
+    /**
+     * Pausa el juego.
+     */
     #pause = function() {
         clearInterval(this.#idPlay);
         this.#idPlay = 0;
     }
 
-    #eat = function ([row,col]) {
-        let [neckRow,neckCol] = [this.#body[0][0],this.#body[0][1]];
-        this.#body.unshift([row,col]);
-        this.#boardGame[row][col].classList = `square head ${this.#direction}`;
-        this.#boardGame[neckRow][neckCol].classList = `square snake`;
-        this.#score += SnakeGame.#POINTS_FOOD;
-        if ( this.#body.length === this.#boardGame.length ** 2) {
-            this.#finishGame(false);
-            return;
-        }
-        this.#renderFood();
-        this.#pause();
-        this.#idPlay = this.#play(this);
+    /**
+     * Da de comer a la serpiente.
+     * 
+     * @param {Array} coordinates Inserta las coordenadas de la casilla donde está el alimento.
+     * 
+     * @return {Number}           La puntuación correspondiente al valor del alimento.
+     */
+    #feedSnake = function([nextRow,nextCol]) {
+        let points = 0;
+        this.#score += (points = this.#boardGame[nextRow][nextCol].food.eated()) == undefined ? SnakeGame.#POINTS_SPECIAL_FOOD : points;
+        this.#snake.eat([nextRow,nextCol]);
+        return points == undefined ? SnakeGame.#POINTS_SPECIAL_FOOD : points;
     }
 
-    #move = function ([row,col]) {
-        let [tailRow,tailCol] = [0,0];
-        this.#body.unshift([row,col]);
-        [tailRow,tailCol] = this.#body.pop();
-        this.#boardGame[tailRow][tailCol].classList = `square empty`;
-        this.#renderSnake();
+    /**
+     * Comprueba si debe crearse una comida especial.
+     * 
+     * @return {Boolean} Resultado de la comprobación. True or false.
+     */
+    #checkCreateSpecialFood = function() {
+        return this.#snake.getBody().length % 8 == 0 && this.#snake.getBody().length <= this.#boardGame.length ** 2 - 2
     }
 
-    #finishGame = function (dead = false) {
-        this.#endGame    = true;
-        SnakeGame.#MAX_SCORE = this.#score > SnakeGame.#MAX_SCORE ? this.#score : SnakeGame.#MAX_SCORE;
-        this.#pause();
-        if (dead) this.#alive = false;
-    }
-
-    #formatScore = score => score < 10 ? `00${score}` : score < 100 ? `0${score}` : score
-
-    #validateDirection = function (direction) {
-        const headDirection = this.#boardGame[this.#body[0][0]][this.#body[0][1]].classList.value.match(/^square head(\s(\w+)?)$/)?.[2];
-        if (this.#direction != headDirection) return false;
-        switch (direction) {
-            case direction.match(/^(UP|DOWN)$/i)?.input:
-                return !(this.#direction === 'down' || this.#direction === 'up');
-            case direction.match(/^(LEFT|RIGHT)$/i)?.input:
-                return !(this.#direction === 'right' || this.#direction === 'left');
-            default:
-                return false;
-        }
-    }
-
-    #checkTailCrossWall = function (rowBeforeTail,colBeforeTail) {
-        return rowBeforeTail == 0 && this.#body[this.#body.length - 1][0] == this.#boardGame.length - 1 ||
-            rowBeforeTail == this.#boardGame.length - 1 && this.#body[this.#body.length - 1][0] == 0 ||
-            colBeforeTail == 0 && this.#body[this.#body.length - 1][1] == this.#boardGame.length - 1 || 
-            colBeforeTail == this.#boardGame.length - 1 && this.#body[this.#body.length - 1][1] == 0;
-    }
-
-    #getDirectionTail = function () {
-        const rowBeforeTail = this.#body[this.#body.length - 2][0];
-        const colBeforeTail = this.#body[this.#body.length - 2][1];
-        if (this.#checkTailCrossWall(rowBeforeTail,colBeforeTail)) {
-            if (this.#body[this.#body.length - 1][0] - rowBeforeTail == 0)
-                return this.#body[this.#body.length - 1][1] < colBeforeTail > 0 ? "right" : "left";
-            return this.#body[this.#body.length - 1][0] < rowBeforeTail > 0 ? "down" : "up";
-        }
-        if (this.#body[this.#body.length - 1][0] - rowBeforeTail == 0)
-            return this.#body[this.#body.length - 1][1] > colBeforeTail ? "right" : "left";
-        return this.#body[this.#body.length - 1][0] > rowBeforeTail > 0 ? "down" : "up";
-    }
-
-    #renderFood = function () {
-        let row = undefined;
-        let col = undefined;
-        let nameClass = '';
+    /**
+     * Crea un nuevo alimento en el juego. Éste alimento puede ser especial, 
+     * con un temporizador interno y una puntuación mayor del alimento normal.
+     * 
+     * Por defecto siempre será normal. Para crear un alimento especial 
+     * pasar booleano 'true' como parámetro. 
+     * 
+     * @param {Boolean} special Opcional: Booleano para crear un alimento especial. True = especial, false = normal.
+     */
+    #createFood = function(special = false) {
+        let [row,col] = [undefined,undefined];
         do {
             row = parseInt(Math.random() * this.#boardGame.length);
             col = parseInt(Math.random() * this.#boardGame.length);
-        } while ((nameClass = this.#boardGame[row][col].classList.value) == nameClass.match(/^square (snake|head|tail)/)?.input);
-        this.#boardGame[row][col].classList = `square food`;
-    }
-    #renderSnake = function () {
-        this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i == 0 ? `square head ${this.#direction}` : 
-            i == this.#body.length - 1 ? `square tail ${this.#getDirectionTail()}` : `square snake`);
+        } while (this.#boardGame[row][col].className !== 'square empty');
+        this.#boardGame[row][col].food = special ? 
+            new Food(this.#boardGame[row][col],SnakeGame.#POINTS_SPECIAL_FOOD,'food',3 + parseFloat( (Math.random() * 3).toFixed(1) )) : 
+            new Food(this.#boardGame[row][col],SnakeGame.#POINTS_FOOD,'food');
     }
 
-    #resetBoardGame = function () {
+    /**
+     * Pausa los temporaizadores de los alimentos que haya en el tablero.
+     */
+    #togglePauseFoodTimer = function() {
         for (let i = 0; i < this.#boardGame.length; i++) 
             for (let j = 0; j < this.#boardGame.length; j++) 
-                this.#boardGame[i][j].classList = `square empty`;
+                this.#boardGame[i][j].food?.togglePause();
     }
 
-    #createSnakeBody = function () {
-        const row  = parseInt((this.#boardGame.length - 1) / 2);
-        const col  = parseInt((this.#boardGame.length - 1) / 3);
-        this.#body = [[row,col],[row,col - 1],[row,col - 2],[row,col - 3]];
+    /**
+     * Finaliza el juego.
+     */
+    #finishGame = function () {
+        SnakeGame.#MAX_SCORE = this.#score > SnakeGame.#MAX_SCORE ? this.#score : SnakeGame.#MAX_SCORE;
+        this.#pause();
+        this.#togglePauseFoodTimer();
+    }
+
+    /**
+     * Devuelve la puntación pasada como parámetro en formato de 3 dígitos.
+     * 
+     * @param {Number} score Puntuación a formatear.
+     * 
+     * @return {String}      Puntuación formateada input: '5' -> output: '005'
+     */
+    #formatScore = score => score < 10 ? `00${score}` : score < 100 ? `0${score}` : score
+
+    /**
+     * Renderiza el tablero de juego.
+     */
+    #renderBoardGame = function() {
+        for (let i = 0; i < this.#boardGame.length; i++) 
+            for (let j = 0; j < this.#boardGame.length; j++) {
+                if (this.#boardGame[i][j].food != null) continue;
+                this.#boardGame[i][j].classList = `square empty`;
+            }
+        this.#renderSnake();
+    }
+
+    /**
+     * Renderiza la serpiente dentro del tablero
+     */
+    #renderSnake = function () {
+        this.#snake.getBody().forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i == 0 ? `square head ${this.#snake.getHeadDirection()}` : 
+            i == this.#snake.getBody().length - 1 ? `square tail ${this.#snake.getTailDirection()}` : `square snake`);
+    }
+
+    /**
+     * Resetea el tablero de juego.
+     */
+    #resetBoardGame = function () {
+        for (let i = 0; i < this.#boardGame.length; i++) 
+            for (let j = 0; j < this.#boardGame.length; j++) {
+                this.#boardGame[i][j].food?.eated();
+                this.#boardGame[i][j].classList = `square empty`;
+            }
     }
 }
