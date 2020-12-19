@@ -36,6 +36,8 @@ class Food {
     }
 
     /**
+     * Nombre dado al atributo en el que está almacenado este objeto
+     * 
      * @return {String} Nombre del atributo en el elemento donde se almacena el objeto food
      */
     getName = function() {
@@ -50,9 +52,16 @@ class Food {
         let obj = Object.values(this.#element).find( e => e instanceof Food );
         if (obj == undefined ) return;
         clearInterval(this.#idRender);
-        this.#element.classList = `square empty`;
         this.#element[obj.getName()] = null;
         return points;
+    }
+
+    /**
+     * Pausa o reanuda el juego.
+     */
+    togglePause = function() {
+        if (this.#time < 0) return;
+        this.#idRender > 0 ? (this.#pauseRender()) : (this.#idRender = this.#render());
     }
 
     /**
@@ -63,8 +72,16 @@ class Food {
         return setInterval(
             () => {
                 food.#element.classList = food.#time < 0 ? Food.#CLASS_NORMAL_FOOD : Food.#CLASS_SPECIAL_FOOD;
-                food.#time = (food.#time -= 0.1).toFixed(1);
+                food.#time = (food.#time -= food.#time > 0 ? 0.1 : 0).toFixed(1);
                 if (food.#time == 0) food.eated();
             }, 100);
+    }
+
+    /**
+     * Pausa el renderizado del alimento
+     */
+    #pauseRender = function() {
+        clearInterval(this.#idRender);
+        this.#idRender = 0;
     }
 }
