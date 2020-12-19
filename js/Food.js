@@ -61,7 +61,6 @@ class Food {
      * Pausa o reanuda el juego.
      */
     togglePause = function() {
-        if (this.#time < 0) return;
         this.#idRender > 0 ? (this.#pauseRender()) : (this.#idRender = this.#render());
     }
 
