@@ -52,6 +52,7 @@ class Food {
         let obj = Object.values(this.#element).find( e => e instanceof Food );
         if (obj == undefined ) return;
         clearInterval(this.#idRender);
+        this.#element.classList = 'square empty';
         this.#element[obj.getName()] = null;
         return points;
     }
