@@ -1,138 +1,149 @@
 /**
  * @author Francisco Javier González Sabariego
+ * 
+ * Snake Class:
+ * 
+ * La clase Serpiente crea una instancia de la serpiente del juego Snake.
+ * 
+ * Este objeto se encarga de gestionar el movimiento, alimento, dirección y estado (vivo o muerto)
+ * de la serpiente, por cada acción que se realiza cada x tiempo.
  */
 
 const Snake = class {
-    static #MAX_SCORE   = 0;
-    static #POINTS_FOOD = 5;
-    #score              = 0;
-    #idPlay             = 0;
-    #boardGame          = [];
     #body               = [];
     #alive              = true;
-    #endGame            = false;
     #direction          = 'right';
+    #headDirection      = 'right';
 
-    constructor(boardGame) {
-        this.#boardGame = boardGame;
-        this.#createSnakeBody();
-        this.#renderSnake();
-        this.#renderFood();
+    /**
+     * Crea una instancia de la clase Serpiente para el juego Snake.
+     * 
+     * @param {Number} boardGameLength 
+     */
+    constructor(boardGameLength) {
+        this.#createSnakeBody(boardGameLength);
     }
 
-    static getMaxScore = function (format = false) {
-        return format ? Snake.#formatScore(Snake.#MAX_SCORE) : Snake.#MAX_SCORE;
-    }
-    getScore = function (format = false) {
-        return format ? this.#formatScore(this.#score) : this.#score;
-    }
-    getPaused = function () {
-        return this.#idPlay == 0;
-    }
-    getBody = function () {
-        return this.#body;
-    }
-    getDirection = function () {
-        return this.#direction;
-    }
+    /**
+     * Devuelve si la serpiente está viva.
+     * 
+     * @return {Boolean} 
+     */
     getAlive = function () {
         return this.#alive;
     }
-    getEndGame = function () {
-        return this.#endGame;
+
+    /**
+     * Devuelve el cuerpo de la serpiente en forma de array de coordenadas.
+     * 
+     * @return {Array} Devuelve el conjunto de coordenadas que conforman el cuerpo de la serpiente 
+     */
+    getBody = function () {
+        return this.#body;
     }
 
+    /**
+     * Devuelve la dirección con la que debe renderizarse la cabeza de la serpiente.
+     * 
+     * @return {String} Dirección para renderizar la cabeza.
+     */
+    getHeadDirection = function () {
+        return this.#headDirection;
+    }
+
+    /**
+     * Devuelve la dirección con la que debe renderizarse la cola de la serpiente.
+     * 
+     * @return {String} Dirección para renderizar la cola.
+     */
+    getTailDirection = function () {
+        const [rowTail,colTail]             = [this.#body[this.#body.length - 1][0],this.#body[this.#body.length - 1][1]];
+        const [rowBeforeTail,colBeforeTail] = [this.#body[this.#body.length - 2][0],this.#body[this.#body.length - 2][1]];
+        if ( this.#checkTailCrossWall(rowBeforeTail - rowTail, colBeforeTail - colTail) ) 
+            return rowTail - rowBeforeTail == 0 ? (colTail < colBeforeTail ? "right" : "left") : (rowTail < rowBeforeTail ? "down" : "up");
+        return rowTail - rowBeforeTail == 0 ? (colTail > colBeforeTail ? "right" : "left") : (rowTail > rowBeforeTail ? "down" : "up");
+    }
+
+    /**
+     * Devuelve las coordenadas de la casilla a la que se encamina la serpiente.
+     * 
+     * @param {Number} boardGameLength Longitud del tablero de juego
+     * @return {Array} Devuelve las coordenadas en formato de array [fila,columna];
+     */
+    getNextSquare = function (boardGameLength) {
+        let [row,col] = [this.#body[0][0],this.#body[0][1]];
+        row += this.#direction === 'up' ? -1 : this.#direction === 'down' ? 1 : 0;
+        col += this.#direction === 'left' ? -1 : this.#direction === 'right' ? 1 : 0;
+        return this.#adjustCoordinatesNextSquare([row,col],boardGameLength);
+    }
+
+    /**
+     * Reasigna la dirección a la que se encamina la serpiente siempre que sea una dirección válida.
+     * 
+     * @param {String} direction La nueva dirección que se quiera dar a la serpiente.
+     */
     setDirection = function (direction) {
         if (!this.#validateDirection(direction)) return;
         this.#direction = direction;
     }
 
-    togglePause = function () {
-        if (!this.#alive || this.#endGame) return;
-        this.#idPlay == 0 ? (this.#idPlay = this.#play(this)) : this.#pause();
-    }
-
-    resetGame = function() {
-        this.#score              = 0;
-        this.#idPlay             = 0;
-        this.#alive              = true;
-        this.#endGame            = false;
-        this.#direction          = 'right';
-        this.#createSnakeBody();
-        this.#resetBoardGame();
-        this.#renderSnake();
-        this.#renderFood();
-    }
-
-    #checkSnakeBiteSelf = function ([row,col]) {
-        const [tailRow,tailCol] = this.#body[this.#body.length - 1];
-        return this.#boardGame[row][col].classList == 'square snake' && !(row === tailRow && col === tailCol);
-    }
-
-    #adjustCoordinatesNextSquare = function ([row,col]) {
-        row = row < 0 ? this.#boardGame.length - 1 : row > this.#boardGame.length - 1 ? 0 : row;
-        col = col < 0 ? this.#boardGame.length - 1 : col > this.#boardGame.length - 1 ? 0 : col;
-        return [row,col];
-    }
-
-    #getNextSquare = function (direction) {
-        let [row,col] = [this.#body[0][0],this.#body[0][1]];
-        row += direction === 'up' ? -1 : direction === 'down' ? 1 : 0;
-        col += direction === 'left' ? -1 : direction === 'right' ? 1 : 0;
-        return this.#adjustCoordinatesNextSquare([row,col]);
-    }
-
-    #play = function (ref) { 
-        let snake = ref;
-        return setInterval( function () {
-            const [nextRow,nextCol] = snake.#getNextSquare(snake.#direction);
-            if (snake.#checkSnakeBiteSelf([nextRow,nextCol])) 
-                snake.#finishGame(true);
-            else if (snake.#boardGame[nextRow][nextCol].classList == 'square food') snake.#eat([nextRow,nextCol]);
-            else snake.#move([nextRow,nextCol]);
-        }, 600 - snake.#body.length * 5);
-    }
-
-    #pause = function() {
-        clearInterval(this.#idPlay);
-        this.#idPlay = 0;
-    }
-
-    #eat = function ([row,col]) {
-        let [neckRow,neckCol] = [this.#body[0][0],this.#body[0][1]];
+    /**
+     * Alimenta a la serpiente.
+     * 
+     * @param {Array} coordinates Array con las coordenadas de la casilla a la que avanza la serpiente. [fila,columna] 
+     */
+    eat = function ([row,col]) {
+        this.#headDirection = this.#direction;
         this.#body.unshift([row,col]);
-        this.#boardGame[row][col].classList = `square head ${this.#direction}`;
-        this.#boardGame[neckRow][neckCol].classList = `square snake`;
-        this.#score += Snake.#POINTS_FOOD;
-        if ( this.#body.length === this.#boardGame.length ** 2) {
-            this.#finishGame(false);
+    }
+
+    /**
+     * Mueve a la serpiente.
+     * 
+     * @param {Array} coordinates Array con las coordenadas de la casilla a la que avanza la serpiente. [fila,columna] 
+     */
+    move = function ([row,col]) {
+        if (this.#checkSnakeBiteSelf([row,col])) {  //if snake biteself then end game
+            this.#alive = false;
             return;
         }
-        this.#renderFood();
-        this.#pause();
-        this.#idPlay = this.#play(this);
+        this.eat([row,col]);
+        this.#body.pop();
     }
 
-    #move = function ([row,col]) {
-        let [tailRow,tailCol] = [0,0];
-        this.#body.unshift([row,col]);
-        [tailRow,tailCol] = this.#body.pop();
-        this.#boardGame[tailRow][tailCol].classList = `square empty`;
-        this.#renderSnake();
+    /**
+     * Comprueba si la serpiente se muerde así misma.
+     * 
+     * @param {Array} coordinates Array con las coordenadas de la casilla a la que avanza la serpiente. [fila,columna]
+     * @return {Boolean}          Resultado de la comprobación. True or false.
+     */
+    #checkSnakeBiteSelf = function ([row,col]) {
+        for (let i = 1; i < this.#body.length - 1; i++)    //Except head and tail
+            if (row == this.#body[i][0] && col == this.#body[i][1]) return true;
+        return false;
     }
 
-    #finishGame = function (dead = false) {
-        this.#endGame    = true;
-        Snake.#MAX_SCORE = this.#score > Snake.#MAX_SCORE ? this.#score : Snake.#MAX_SCORE;
-        this.#pause();
-        if (dead) this.#alive = false;
+    /**
+     * Ajusta las coordendas introducidas según la longitud del tablero.
+     * 
+     * @param {Array} coordinates       Array con las coordenadas a ajustar. [fila,columna]
+     * @param {Number} boardGameLength  Longitud del tablero.
+     * @return {Array}                  Coordenadas ajustadas en forma de array. [fila,columna]
+     */
+    #adjustCoordinatesNextSquare = function ([row,col],boardGameLength) {
+        row = row < 0 ? boardGameLength - 1 : row > boardGameLength - 1 ? 0 : row;
+        col = col < 0 ? boardGameLength - 1 : col > boardGameLength - 1 ? 0 : col;
+        return [row,col];
     }
-
-    #formatScore = score => score < 10 ? `00${score}` : score < 100 ? `0${score}` : score
-
+    
+    /**
+     * Valida la nueva dirección que se quiere asignar a la serpiente.
+     * 
+     * @param {String} direction La nueva dirección que se quiere dar a la serpiente.
+     * @return {Boolean}         Resultado de la validación. True or false.
+     */
     #validateDirection = function (direction) {
-        const headDirection = this.#boardGame[this.#body[0][0]][this.#body[0][1]].classList.value.match(/^square head(\s(\w+)?)$/)?.[2];
-        if (this.#direction != headDirection) return false;
+        if (this.#direction != this.#headDirection) return false;
         switch (direction) {
             case direction.match(/^(UP|DOWN)$/i)?.input:
                 return !(this.#direction === 'down' || this.#direction === 'up');
@@ -143,50 +154,23 @@ const Snake = class {
         }
     }
 
-    #checkTailCrossWall = function (rowBeforeTail,colBeforeTail) {
-        return rowBeforeTail == 0 && this.#body[this.#body.length - 1][0] == this.#boardGame.length - 1 ||
-            rowBeforeTail == this.#boardGame.length - 1 && this.#body[this.#body.length - 1][0] == 0 ||
-            colBeforeTail == 0 && this.#body[this.#body.length - 1][1] == this.#boardGame.length - 1 || 
-            colBeforeTail == this.#boardGame.length - 1 && this.#body[this.#body.length - 1][1] == 0;
-    }
+    /**
+     * Comprueba si la cola de la serpiente está cruzando los límites del tablero.
+     * 
+     * @param {Number} rowDiff  Diferencia entre la coordenada fila de la cola y de la sección anterior del cuerpo a la misma
+     * @param {Number} colDiff  Diferencia entre la coordenada columna de la cola y de la sección anterior del cuerpo a la misma
+     * @return {Boolean}        Resultado de la comprobación si la cola está cruzando el límite del tablero. Ture or false.
+     */
+    #checkTailCrossWall = (rowDiff,colDiff) => rowDiff > 1 || rowDiff < -1 || colDiff > 1 || colDiff < -1;
 
-    #getDirectionTail = function () {
-        const rowBeforeTail = this.#body[this.#body.length - 2][0];
-        const colBeforeTail = this.#body[this.#body.length - 2][1];
-        if (this.#checkTailCrossWall(rowBeforeTail,colBeforeTail)) {
-            if (this.#body[this.#body.length - 1][0] - rowBeforeTail == 0)
-                return this.#body[this.#body.length - 1][1] < colBeforeTail > 0 ? "right" : "left";
-            return this.#body[this.#body.length - 1][0] < rowBeforeTail > 0 ? "down" : "up";
-        }
-        if (this.#body[this.#body.length - 1][0] - rowBeforeTail == 0)
-            return this.#body[this.#body.length - 1][1] > colBeforeTail ? "right" : "left";
-        return this.#body[this.#body.length - 1][0] > rowBeforeTail > 0 ? "down" : "up";
-    }
-
-    #renderFood = function () {
-        let row = undefined;
-        let col = undefined;
-        let nameClass = '';
-        do {
-            row = parseInt(Math.random() * this.#boardGame.length);
-            col = parseInt(Math.random() * this.#boardGame.length);
-        } while ((nameClass = this.#boardGame[row][col].classList.value) == nameClass.match(/^square (snake|head|tail)/)?.input);
-        this.#boardGame[row][col].classList = `square food`;
-    }
-    #renderSnake = function () {
-        this.#body.forEach( (e,i) => this.#boardGame[e[0]][e[1]].classList = i == 0 ? `square head ${this.#direction}` : 
-            i == this.#body.length - 1 ? `square tail ${this.#getDirectionTail()}` : `square snake`);
-    }
-
-    #resetBoardGame = function () {
-        for (let i = 0; i < this.#boardGame.length; i++) 
-            for (let j = 0; j < this.#boardGame.length; j++) 
-                this.#boardGame[i][j].classList = `square empty`;
-    }
-
-    #createSnakeBody = function () {
-        const row  = parseInt((this.#boardGame.length - 1) / 2);
-        const col  = parseInt((this.#boardGame.length - 1) / 3);
+    /**
+     * Creación del cuerpo de la serpiente.
+     * 
+     * @param {Number} boardGameLength 
+     */
+    #createSnakeBody = function (boardGameLength) {  //Pending dinamic creation
+        const row  = parseInt((boardGameLength - 1) / 2);
+        const col  = parseInt((boardGameLength - 1) / 3);
         this.#body = [[row,col],[row,col - 1],[row,col - 2],[row,col - 3]];
     }
 }
